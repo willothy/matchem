@@ -257,4 +257,34 @@ pub fn insert_basic_test() {
       ),
     ]),
   )
+
+  let route = matchem.insert(route, "/", 420)
+
+  route
+  |> should.equal(
+    matchem.root([
+      Node(
+        "/",
+        matchem.Static,
+        Some(420),
+        dict.from_list([
+          #(
+            "/test",
+            Node(
+              "/test",
+              matchem.Static,
+              None,
+              dict.from_list([
+                #(
+                  "/abc/123",
+                  Node("/abc/123", matchem.Static, Some(123), dict.new()),
+                ),
+                #("/123", Node("/123", matchem.Static, Some(321), dict.new())),
+              ]),
+            ),
+          ),
+        ]),
+      ),
+    ]),
+  )
 }

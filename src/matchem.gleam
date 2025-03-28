@@ -111,8 +111,10 @@ pub fn insert(node: Node(a), key: String, value: a) -> Node(a) {
                 })
               {
                 Ok(#(child, common)) -> {
-                  let common_len = string.length(common)
-
+                  let common_len = case common {
+                    "/" -> 0
+                    _ -> string.length(common)
+                  }
                   // partial match
                   let new_prefix =
                     string.slice(
@@ -127,29 +129,35 @@ pub fn insert(node: Node(a), key: String, value: a) -> Node(a) {
                       string.length(key) - common_len,
                     )
 
+                  let #(children, value) = case common {
+                    "/" -> #(
+                      [#(new_prefix, Node(..child, prefix: new_prefix))],
+                      Some(value),
+                    )
+                    _ -> #(
+                      [
+                        #(new_prefix, Node(..child, prefix: new_prefix)),
+                        #(
+                          new_other_prefix,
+                          Node(
+                            new_other_prefix,
+                            Static,
+                            Some(value),
+                            dict.new(),
+                          ),
+                        ),
+                      ],
+                      None,
+                    )
+                  }
+
                   Node(
                     ..node,
                     children: node.children
                       |> dict.delete(child.prefix)
                       |> dict.insert(
                         common,
-                        Node(
-                          common,
-                          Static,
-                          None,
-                          dict.from_list([
-                            #(new_prefix, Node(..child, prefix: new_prefix)),
-                            #(
-                              new_other_prefix,
-                              Node(
-                                new_other_prefix,
-                                Static,
-                                Some(value),
-                                dict.new(),
-                              ),
-                            ),
-                          ]),
-                        ),
+                        Node(common, Static, value, dict.from_list(children)),
                       ),
                   )
                 }
